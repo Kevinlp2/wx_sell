@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
     @Autowired
     private ProductInfoService productInfoService;
-    @GetMapping("list")
+    @GetMapping("/list")
     @ApiOperation( value = "查询商品列表")
     public ResultResponse getlist(){
         return productInfoService.queryList();

@@ -5,15 +5,17 @@ import com.lp.wx_sell.common.ResultResponse;
 import com.lp.wx_sell.dto.ProductCategoryDto;
 import com.lp.wx_sell.dto.ProductInfoDto;
 import com.lp.wx_sell.entity.ProductInfo;
+import com.lp.wx_sell.exception.CustomException;
 import com.lp.wx_sell.repository.ProductInfoRepository;
 import com.lp.wx_sell.service.ProductCategoryService;
 import com.lp.wx_sell.service.ProductInfoService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -46,14 +48,29 @@ public class ProductInfoServiceImpl implements ProductInfoService {
                     map( productInfo -> ProductInfoDto.buid( productInfo ) ).collect( Collectors.toList() ) );
             return productCategoryDto;
         } ).collect( Collectors.toList() );
-//        List<ProductCategorydto> finalResultList = categorydtoList.parallelStream().map(categorydto -> {
-//            categorydto.setProductInfodtoList(productInfoList.stream().
-//                    filter(productInfo -> productInfo.getCategoryType() == categorydto.getCategoryType()).map(productInfo ->
-//                    ProductInfodto.build(productInfo)).collect(Collectors.toList()));
-//            return categorydto;
-//        }).collect(Collectors.toList());
-
-
         return ResultResponse.success(  finalRseultList);
+    }
+
+    @Override
+    public ResultResponse<ProductInfo> queryById(String productId) {
+        //判断参数是否异常
+        if(StringUtils.isBlank( productId )){
+            return ResultResponse.fail( ResultEnums.PARAM_ERROR.getMsg()+":"+productId );
+        }
+        Optional<ProductInfo> byId = productInfoRepository.findById( productId );
+        if(!byId.isPresent()){
+            throw new CustomException(ResultEnums.NOT_EXITS.getMsg() );
+        }
+        ProductInfo productInfo = byId.get();
+        //判断商品是否下架
+        if(productInfo.getProductStatus() == ResultEnums.PRODUCT_DOWN.getCode()){
+            return ResultResponse.fail( ResultEnums.PRODUCT_DOWN.getMsg() );
+        }
+        return ResultResponse.success(productInfo);
+    }
+
+    @Override
+    public void updateProduct(ProductInfo productInfo) {
+        productInfoRepository.save( productInfo );
     }
 }

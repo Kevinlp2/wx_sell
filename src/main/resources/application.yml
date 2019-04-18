@@ -4,10 +4,10 @@ server:
     context-path: /sell
 spring:
   druid:
-    url: jdbc:mysql://192.168.1.164:3306/sell?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT
+    url: jdbc:mysql://127.0.0.1:3306/sell?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT
     driverClassName: com.mysql.jdbc.Driver
     username: root
-    password: 123456
+    password: root
     maxActive: 30
     maxWaut: 10000
   jpa:
@@ -15,3 +15,8 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss #日期格式化标准
     default-property-inclusion: non_null #返回json时 忽略null
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
