@@ -9,10 +9,10 @@ import com.lp.wx_sell.dto.OrderMasterDto;
 import com.lp.wx_sell.entity.OrderDetail;
 import com.lp.wx_sell.entity.OrderMaster;
 import com.lp.wx_sell.entity.ProductInfo;
-import com.lp.wx_sell.exception.CustomException;
 import com.lp.wx_sell.repository.OrderMasterRepository;
 import com.lp.wx_sell.service.OrderDetailService;
 import com.lp.wx_sell.service.OrderMasterService;
+import com.lp.wx_sell.service.PayService;
 import com.lp.wx_sell.service.ProductInfoService;
 import com.lp.wx_sell.util.BigDecimalUtil;
 import com.lp.wx_sell.util.IDUtil;
@@ -38,6 +38,8 @@ public class OrderMasterServiceImpl implements OrderMasterService {
     private ProductInfoService productInfoService;
     @Autowired
     private OrderDetailService orderDetailService;
+    @Autowired
+    private PayService payService;
 
     @Override
     public ResultResponse insertOrder(OrderMasterDto orderMasterDto) {
@@ -114,7 +116,7 @@ public class OrderMasterServiceImpl implements OrderMasterService {
     public ResultResponse findDetail(String openId, String orderId) {
         //判断参数是否异常
         if(StringUtils.isBlank( openId )){
-            return ResultResponse.fail( OrderEnums.OPENID_ERROR.getMsg() );
+            return ResultResponse.fail( OrderEnums.OPENID_ERROR.getMsg()+":"+openId );
         }
         if(StringUtils.isBlank( orderId )){
             return ResultResponse.fail( ResultEnums.PARAM_ERROR.getMsg()+":"+orderId);
@@ -147,7 +149,7 @@ public class OrderMasterServiceImpl implements OrderMasterService {
     public ResultResponse cancel(String openId, String orderId) {
         //判断参数是否异常
         if(StringUtils.isBlank( openId )){
-            return ResultResponse.fail( OrderEnums.OPDER_NOT_EXITS.getMsg());
+            return ResultResponse.fail( OrderEnums.OPDER_NOT_EXITS.getMsg()+":"+openId);
         }
         if(StringUtils.isBlank( orderId )){
             return ResultResponse.fail( ResultEnums.PARAM_ERROR.getMsg()+":"+orderId);
@@ -159,10 +161,22 @@ public class OrderMasterServiceImpl implements OrderMasterService {
         if(!byId.isPresent()){
             return ResultResponse.fail( OrderEnums.OPDER_NOT_EXITS.getMsg());
         }
+        if(orderMaster1.getOrderStatus()==OrderEnums.CANCEL.getCode()){
+            return ResultResponse.fail( OrderEnums.CANCEL.getMsg());
+        }
 
         OrderMaster orderMaster = orderMasterRepository.findAllByBuyerOpenidAndOrderId( openId ,orderId);
         if(orderMaster==null){
             return ResultResponse.fail( OrderEnums.OPDER_NOT_EXITS.getMsg());
+        }
+        //如果该订单已取消
+        if(orderMaster.getPayStatus()==OrderEnums.CANCEL.getCode()){
+            return ResultResponse.fail( OrderEnums.CANCEL.getMsg());
+        }
+
+        if(orderMaster.getPayStatus()==OrderEnums.FINSH.getCode()){
+            payService.refund( orderMaster );
+
         }
         orderMaster.setOrderStatus( OrderEnums.CANCEL.getCode() );
         orderMaster.setUpdateTime( new Date() );

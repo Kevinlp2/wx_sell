@@ -2,12 +2,19 @@ server:
   port: 8888 #端口号改为8888
   servlet:
     context-path: /sell
+  wechat:
+    appid: wxcec0b9e65c084712
+    secret: 05a7e861c1985ced86af77fb8f7163bc
+    mchId: 1529533061
+    mchKey: qwertyuiopasdfghjklzxcvbnm123456
+    keyPath: F:\上课资料\05微信点餐项目\day07\微信服务号信息_资料\apiclient_cert.p12
+    notifyUrl: http://xmcc.natapp1.cc/sell/pay/notify
 spring:
   druid:
-    url: jdbc:mysql://127.0.0.1:3306/sell?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT
+    url: jdbc:mysql://192.168.1.164:3306/sell?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT
     driverClassName: com.mysql.jdbc.Driver
     username: root
-    password: root
+    password: 123456
     maxActive: 30
     maxWaut: 10000
   jpa:
@@ -15,8 +22,3 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss #日期格式化标准
     default-property-inclusion: non_null #返回json时 忽略null
-pagehelper:
-  helper-dialect: mysql
-  reasonable: true
-  support-methods-arguments: true
-  params: count=countSql
